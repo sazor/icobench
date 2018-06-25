@@ -5,6 +5,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha512"
 	"encoding/base64"
+	"encoding/json"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -38,11 +39,12 @@ type Client struct {
 
 func (c Client) AllICO(filters AllICORequest) (*AllICOResponse, error) {
 	url := c.APIURL + "icos/all"
-	data, err := filters.MarshalJSON()
+	data := bytes.Buffer{}
+	err := json.NewEncoder(&data).Encode(filters)
 	if err != nil {
 		return nil, errors.Wrap(err, ErrICObench)
 	}
-	req, err := c.initRequest(url, data)
+	req, err := c.initRequest(url, &data)
 	if err != nil {
 		return nil, errors.Wrap(err, ErrICObench)
 	}
@@ -51,7 +53,7 @@ func (c Client) AllICO(filters AllICORequest) (*AllICOResponse, error) {
 		return nil, errors.Wrap(err, ErrICObench)
 	}
 	icos := AllICOResponse{}
-	if err := icos.UnmarshalJSON(resp); err != nil {
+	if err := json.Unmarshal(resp, &icos); err != nil {
 		return nil, errors.Wrap(err, ErrICObench)
 	}
 	return &icos, nil
@@ -59,7 +61,7 @@ func (c Client) AllICO(filters AllICORequest) (*AllICOResponse, error) {
 
 func (c Client) Trending() (*TrendingResponse, error) {
 	url := c.APIURL + "icos/trending"
-	req, err := c.initRequest(url, []byte{})
+	req, err := c.initRequest(url, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, ErrICObench)
 	}
@@ -68,15 +70,15 @@ func (c Client) Trending() (*TrendingResponse, error) {
 		return nil, errors.Wrap(err, ErrICObench)
 	}
 	icos := TrendingResponse{}
-	if err := icos.UnmarshalJSON(resp); err != nil {
+	if err := json.Unmarshal(resp, &icos); err != nil {
 		return nil, errors.Wrap(err, ErrICObench)
 	}
 	return &icos, nil
 }
 
-func (c Client) ICODetails(ID int64) (*DetailedICO, error) {
-	url := c.APIURL + "ico/" + strconv.Itoa(int(ID))
-	req, err := c.initRequest(url, []byte{})
+func (c Client) ICODetails(id int) (*DetailedICO, error) {
+	url := c.APIURL + "ico/" + strconv.Itoa(id)
+	req, err := c.initRequest(url, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, ErrICObench)
 	}
@@ -85,7 +87,7 @@ func (c Client) ICODetails(ID int64) (*DetailedICO, error) {
 		return nil, errors.Wrap(err, ErrICObench)
 	}
 	ico := DetailedICO{}
-	if err := ico.UnmarshalJSON(resp); err != nil {
+	if err := json.Unmarshal(resp, &ico); err != nil {
 		return nil, errors.Wrap(err, ErrICObench)
 	}
 	return &ico, nil
@@ -97,16 +99,15 @@ func (c Client) sign(data []byte) string {
 	return base64.StdEncoding.EncodeToString(mac.Sum(nil))
 }
 
-func (c Client) initRequest(url string, data []byte) (*http.Request, error) {
-	buf := bytes.NewReader(data)
-	req, err := http.NewRequest("POST", url, buf)
+func (c Client) initRequest(url string, data *bytes.Buffer) (*http.Request, error) {
+	req, err := http.NewRequest("POST", url, data)
 	if err != nil {
 		return nil, errors.Wrap(err, ErrICObench)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("X-ICObench-Key", c.PublicKey)
-	req.Header.Set("X-ICObench-Sig", c.sign(data))
+	req.Header.Set("X-ICObench-Sig", c.sign(data.Bytes()))
 	return req, nil
 }
 

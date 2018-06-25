@@ -1,5 +1,3 @@
-//go:generate ffjson $GOFILE
-
 package icobench
 
 type AllICOResponse struct {
