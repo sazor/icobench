@@ -1,17 +1,17 @@
 package icobench
 
-type AllICOResponse struct {
-	ICOs        int64 `json:"icos"`
-	Pages       int64 `json:"pages"`
-	CurrentPage int64 `json:"currentPage"`
+type SearchResponse struct {
+	ICOs        int   `json:"icos"`
+	Pages       int   `json:"pages"`
+	CurrentPage int   `json:"currentPage"`
 	Results     []ICO `json:"results"`
 }
 
-type AllICORequest struct {
+type SearchRequest struct {
 	OrderDesc       string `json:"orderDesc"`
 	OrderAsc        string `json:"orderAsc"`
-	Page            int64  `json:"page"`
-	Category        int64  `json:"category"`
+	Page            int    `json:"page"`
+	Category        int    `json:"category"`
 	Platform        string `json:"platform"`
 	Accepting       string `json:"accepting"`
 	Country         string `json:"country"`
@@ -24,8 +24,8 @@ type AllICORequest struct {
 	Rating          string `json:"rating"`
 	StartAfter      string `json:"startAfter"`
 	EndBefore       string `json:"endBefore"`
-	Registration    int64  `json:"registration"`
-	ExclRestCountry string `json:"excludeRestrictedCountry`
+	Registration    int    `json:"registration"`
+	ExclRestCountry string `json:"excludeRestrictedCountry"`
 }
 
 type TrendingResponse struct {
@@ -33,13 +33,13 @@ type TrendingResponse struct {
 }
 
 type ICO struct {
-	ID      int64   `json:"id"`
+	ID      int     `json:"id"`
 	Name    string  `json:"name"`
 	URL     string  `json:"url"`
 	Logo    string  `json:"logo"`
 	Desc    string  `json:"desc"`
 	Rating  float64 `json:"rating"`
-	Premium int64   `json:"premium"`
+	Premium int     `json:"premium"`
 	Dates   struct {
 		PreICOStart string `json:"preIcoStart"`
 		PreICOEnd   string `json:"preIcoEnd"`
@@ -48,7 +48,7 @@ type ICO struct {
 	} `json:"dates"`
 }
 
-type DetailedICO struct {
+type ProfileResponse struct {
 	ID            int     `json:"id"`
 	Name          string  `json:"name"`
 	Rating        float64 `json:"rating"`
@@ -154,4 +154,31 @@ type DetailedICO struct {
 		Succeed int `json:"succeed"`
 		Failed  int `json:"failed"`
 	} `json:"kyc"`
+}
+
+type FiltersResponse struct {
+	Categories []struct {
+		ID   int    `json:"id"`
+		Name string `json:"name"`
+	} `json:"categories"`
+	Platforms []struct {
+		Name string `json:"name"`
+	} `json:"platforms"`
+	Accepting []struct {
+		Name string `json:"name"`
+	} `json:"accepting"`
+	Countries []struct {
+		Name string `json:"name"`
+	} `json:"countries"`
+}
+
+type RatingsResponse struct {
+	ICOs    int `json:"icos"`
+	Results []struct {
+		ID     int     `json:"id"`
+		Name   string  `json:"name"`
+		URL    string  `json:"url"`
+		Logo   string  `json:"logo"`
+		Rating float64 `json:"float64"`
+	} `json:"results"`
 }
